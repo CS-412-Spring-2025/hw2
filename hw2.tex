@@ -1,12 +1,23 @@
 \documentclass[a4paper]{exam}
 
+\usepackage{amsmath}
+\usepackage{clrscode3e}
 \usepackage{geometry}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+
 \graphicspath{{images/}}
 
 \printanswers
 \addpoints
+
+\usepackage{draftwatermark}
+\SetWatermarkText{Instructor Solution}
+\SetWatermarkScale{3}
+\SetWatermarkLightness{.95}
+\printanswers
 
 \title{Homework Assignment 2}
 \author{CS/CE 412/471 Algorithms: Design and Analysis, Spring 2025}
@@ -226,23 +237,101 @@ The output declares a minimum of 2 days for the maximal spread of the disease. O
 \begin{parts}
 \part[5] Provide a recursive definition of the minimum stress damage. Make sure to indicate the base case. Clearly define any notation that you introduce.
   \begin{solution}
-    
+    Let us introduce station 0 to represent the starting point. Then $a_0=0$. Let $d_i$ represent the minimum stress damage when stopping at station $i$ for $0\le i\le n$. Then $d_0=0$ and the required answer is $d_n$. The recursive definition is as follows.
+    \[
+      d_i =
+      \begin{cases}
+        0 & i = 0\\
+        \min\{d_j + (1000 - (a_i - a_j))^2 : 1 \le j < i\} & i \le n
+      \end{cases}
+    \]
   \end{solution}
-\part[5] Include a below a visualization of the problem subgraph for $n=5$.
+\part[5] Include a below a visualization of the subproblem graph for $n=5$.
   \begin{solution}
-    
+    \begin{center}
+      \begin{tikzpicture}
+        \node[circle, draw] (5) {5};
+        \node[circle, draw, right = of 5] (4) {4};
+        \node[circle, draw, right = of 4] (3) {3};
+        \node[circle, draw, right = of 3] (2) {2};
+        \node[circle, draw, right = of 2] (1) {1};
+        \node[circle, draw, right = of 1] (0) {0};
+
+        \draw[->, >=stealth] (5) -- (4);
+        \draw[->, >=stealth] (4) -- (3);
+        \draw[->, >=stealth] (3) -- (2);
+        \draw[->, >=stealth] (2) -- (1);
+        \draw[->, >=stealth] (1) -- (0);
+
+        \draw[->, >=stealth, bend left=20] (5) to (3);
+        \draw[->, >=stealth, bend left=20] (5) to (2);
+        \draw[->, >=stealth, bend left=20] (5) to (1);
+        \draw[->, >=stealth, bend left=20] (5) to (0);
+
+        \draw[->, >=stealth, bend right=20] (4) to (2);
+        \draw[->, >=stealth, bend right=20] (4) to (1);
+        \draw[->, >=stealth, bend right=20] (4) to (0);
+
+        \draw[->, >=stealth, bend left=20] (3) to (1);
+        \draw[->, >=stealth, bend left=20] (3) to (0);
+
+        \draw[->, >=stealth, bend right=20] (2) to (0);
+      \end{tikzpicture}
+    \end{center}
   \end{solution}
 \part[5] Discuss the time complexity of the solution.
   \begin{solution}
-    
+    In the subproblem graph, each of the $n$ nodes connect to $n$ other nodes. A dynamic programming solution would thus take $\Theta(n^2)$ time.
   \end{solution}
 \part[5] Provide a bottom-up implementation (pseudocode) to compute the minimum stress damage.
   \begin{solution}
-    
-  \end{solution}
+\begin{codebox}
+\Procname{$\proc{Min-Stress-Damage}(a, n)$}
+\li $dp \gets $ array of size $n+1$
+\li $dp[0] \gets 0$
+\li \For $i \gets 1$ \To $n$ \Do
+\li $dp[i] \gets \infty$
+\li \For $j \gets 0$ \To $i-1$ \Do
+\li $dp[i] \gets \min(dp[i], dp[j] + (1000 - (a[i] - a[j]))^2)$
+\End
+\End
+\li \Return $dp[n]$
+\end{codebox}    
+\end{solution}
+\newpage
 \part[5] Show how the pseudocode can be modified to also compute the sequence of visited charging stations.
   \begin{solution}
-    
+\begin{codebox}
+\Procname{$\proc{Min-Stress-Damage}(a, n)$}
+\li $dp \gets $ array of size $n+1$
+\li $v \gets $ array of size $n+1$ \Comment NEW
+\li $dp[0] \gets 0$
+\li $v[0] \gets 0$ \Comment NEW
+\li \For $i \gets 1$ \To $n$ \Do
+\li $dp[i] \gets \infty$
+\li \For $j \gets 0$ \To $i-1$ \Do
+\li $t \gets dp[i]$ \Comment NEW
+\li $dp[i] \gets \min(dp[i], dp[j] + (1000 - (a[i] - a[j]))^2)$
+\li \If $dp[i] < t$ \Comment NEW \Then
+\li $v[i] \gets j$ \Comment NEW
+\End
+\End
+\End
+\li \Return $dp[n], v$
+\end{codebox}    
+\begin{codebox}
+\Procname{$\proc{Print-Sequence}(v, n)$}
+\li $i \gets n$
+\li $s \gets $ empty stack
+\li \While $i > 0$ \Do
+\li push$(s, i)$
+\li $i \gets v[i]$
+\End
+\li push$(s, 0)$
+\li \While not \attrib{s}{empty} \Do
+\li print(pop$(s)$)
+\End
+\end{codebox}    
   \end{solution}
  
 \end{parts}
